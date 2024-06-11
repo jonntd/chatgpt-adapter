@@ -27,6 +27,8 @@ builds:
       - 7
     mod_timestamp: "{{ .CommitTimestamp }}"
 dockers:
+  extra_files:
+    - ./config.yml
   # https://goreleaser.com/customization/docker/
   - use: buildx
     goos: linux
@@ -69,8 +71,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-    extra_files:
-      - ./config.yml
+
   - use: buildx
     goos: linux
     goarch: arm
