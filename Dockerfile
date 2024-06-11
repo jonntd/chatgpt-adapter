@@ -1,4 +1,4 @@
-FROM alpine:
+FROM alpine:latest
 # copy over the binary from the first stage
 RUN ls -la
 
