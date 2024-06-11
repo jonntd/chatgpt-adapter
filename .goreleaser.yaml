@@ -40,7 +40,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-   extra_files:
+    extra_files:
       - config.yml
   - use: buildx
     goos: linux
@@ -54,7 +54,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-   extra_files:
+    extra_files:
       - config.yml
   - use: buildx
     goos: linux
@@ -69,7 +69,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-   extra_files:
+    extra_files:
       - config.yml
   - use: buildx
     goos: linux
@@ -84,7 +84,7 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-   extra_files:
+    extra_files:
       - config.yml
 docker_manifests:
   # https://goreleaser.com/customization/docker_manifest/
@@ -101,7 +101,7 @@ docker_manifests:
       - ghcr.io/jonntd/{{ .ProjectName }}:latest-armv6
       - ghcr.io/jonntd/{{ .ProjectName }}:latest-armv7
 archives:
-  - id: archive_1
+  - id: archive
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}_v{{ .Arm }}{{ end }}"
 
     format_overrides:
