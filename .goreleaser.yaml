@@ -41,7 +41,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - config.yml
+      - ./config.yml
   - use: buildx
     goos: linux
     goarch: arm64
@@ -55,7 +55,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - config.yml
+      - ./config.yml
   - use: buildx
     goos: linux
     goarch: arm
@@ -70,7 +70,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - config.yml
+      - ./config.yml
   - use: buildx
     goos: linux
     goarch: arm
@@ -85,7 +85,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - config.yml
+      - ./config.yml
 docker_manifests:
   # https://goreleaser.com/customization/docker_manifest/
   - name_template: ghcr.io/jonntd/{{ .ProjectName }}:{{ .Version }}
