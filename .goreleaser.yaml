@@ -9,8 +9,9 @@ before:
     - go fmt ./...
 builds:
   # https://goreleaser.com/customization/build/
-  - main: ./helloworld
-    binary: helloworld
+  - main: ./cmd/command.go
+
+    binary: chatgpt-adapter
     env:
       - CGO_ENABLED=0
     goos:
@@ -92,7 +93,7 @@ docker_manifests:
       - ghcr.io/jonntd/{{ .ProjectName }}:latest-armv6
       - ghcr.io/jonntd/{{ .ProjectName }}:latest-armv7
 archives:
-  - id: helloworld_archive_1
+  - id: archive_1
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}_v{{ .Arm }}{{ end }}"
 
     format_overrides:
