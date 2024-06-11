@@ -16,15 +16,15 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
-      - darwin
+      # - windows
+      # - darwin
     goarch:
       - amd64
-      - arm
+      # - arm
       - arm64
     goarm:
-      - 6
-      - 7
+      # - 6
+      # - 7
     mod_timestamp: "{{ .CommitTimestamp }}"
 dockers:
   # https://goreleaser.com/customization/docker/
@@ -41,7 +41,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - ./cmd/config.yaml
+      - config.yaml
   - use: buildx
     goos: linux
     goarch: arm64
@@ -55,7 +55,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - ./cmd/config.yaml
+      - config.yaml
   - use: buildx
     goos: linux
     goarch: arm
@@ -84,7 +84,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
-      - ./cmd/config.yaml
+      - config.yaml
 docker_manifests:
   # https://goreleaser.com/customization/docker_manifest/
   - name_template: ghcr.io/jonntd/{{ .ProjectName }}:{{ .Version }}
