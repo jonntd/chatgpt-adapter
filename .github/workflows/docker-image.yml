@@ -34,6 +34,6 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --skip-publish --snapshot --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GOLBAL }}
