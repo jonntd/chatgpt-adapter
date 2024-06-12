@@ -10,14 +10,13 @@ before:
 builds:
   # https://goreleaser.com/customization/build/
   - main: ./cmd/command.go
-
     binary: chatgpt-adapter
     env:
       - CGO_ENABLED=0
     goos:
       - linux
-      # - windows
-      # - darwin
+      - windows
+      - darwin
     goarch:
       - amd64
       - arm
@@ -103,7 +102,6 @@ docker_manifests:
 archives:
   - id: archive
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}_v{{ .Arm }}{{ end }}"
-
     format_overrides:
       - goos: windows
         format: zip
