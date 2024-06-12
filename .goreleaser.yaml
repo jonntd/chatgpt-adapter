@@ -20,7 +20,7 @@ builds:
       # - darwin
     goarch:
       - amd64
-      # - arm
+      - arm
       - arm64
     goarm:
       - 6
