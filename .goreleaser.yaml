@@ -41,6 +41,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
+      - glob: ./config.yaml
       - config.yaml
   - use: buildx
     goos: linux
@@ -55,6 +56,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
+      - glob: ./config.yaml
       - config.yaml
   - use: buildx
     goos: linux
@@ -84,6 +86,7 @@ dockers:
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     extra_files:
+      - glob: ./config.yaml
       - config.yaml
 docker_manifests:
   # https://goreleaser.com/customization/docker_manifest/
