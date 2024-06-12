@@ -6,7 +6,7 @@ before:
   hooks:
     # tidy up and lint
     - go mod tidy
-    - go fmt ./...
+    # - go fmt ./...
 builds:
   # https://goreleaser.com/customization/build/
   - main: ./cmd/command.go
@@ -25,6 +25,11 @@ builds:
       - 6
       - 7
     mod_timestamp: "{{ .CommitTimestamp }}"
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }} -X main.builtBy=goreleaser -X main.treeState={{ .IsGitDirty }}
+    
 dockers:
   # https://goreleaser.com/customization/docker/
   - use: buildx
@@ -34,11 +39,13 @@ dockers:
       - "ghcr.io/jonntd/{{ .ProjectName }}:{{ .Version }}-amd64"
       - "ghcr.io/jonntd/{{ .ProjectName }}:latest-amd64"
     build_flag_templates:
-      - "--platform=linux/amd64"
+      - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/amd64"
     extra_files:
       - ./config.yaml
   - use: buildx
@@ -48,11 +55,13 @@ dockers:
       - "ghcr.io/jonntd/{{ .ProjectName }}:{{ .Version }}-arm64v8"
       - "ghcr.io/jonntd/{{ .ProjectName }}:latest-arm64v8"
     build_flag_templates:
-      - "--platform=linux/arm64/v8"
+      - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/arm64/v8"
     extra_files:
       - ./config.yaml
   - use: buildx
@@ -63,11 +72,13 @@ dockers:
       - "ghcr.io/jonntd/{{ .ProjectName }}:{{ .Version }}-armv6"
       - "ghcr.io/jonntd/{{ .ProjectName }}:latest-armv6"
     build_flag_templates:
-      - "--platform=linux/arm/v6"
+      - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/arm/v6"
     extra_files:
       - ./config.yaml
   - use: buildx
@@ -78,11 +89,14 @@ dockers:
       - "ghcr.io/jonntd/{{ .ProjectName }}:{{ .Version }}-armv7"
       - "ghcr.io/jonntd/{{ .ProjectName }}:latest-armv7"
     build_flag_templates:
-      - "--platform=linux/arm/v7"
+      - "--pull"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
+      - "--label=org.opencontainers.image.source={{.GitURL}}"
+      - "--platform=linux/arm/v7"
+
     extra_files:
       - ./config.yaml
 docker_manifests:
