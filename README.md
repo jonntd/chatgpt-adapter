@@ -125,6 +125,7 @@ curl -i -X POST \
 <img width="451" alt="Screenshot 2024-05-23 at 03 13 09" src="https://github.com/bincooo/chatgpt-adapter/assets/36452456/faa16d95-a082-4e90-826e-73b7055fad8f">
 <img width="451" alt="Screenshot 2024-05-23 at 03 21 34" src="https://github.com/bincooo/chatgpt-adapter/assets/36452456/a59cfba6-11b7-419e-bb3e-84d28c018fbd">
 <img width="451" alt="Screenshot 2024-05-23 at 03 30 29" src="https://github.com/bincooo/chatgpt-adapter/assets/36452456/baa0020c-1da3-4302-8705-8d8abdbbff97">
+<img width="451" alt="Screenshot 2024-06-08 at 19 57 49" src="https://github.com/bincooo/chatgpt-adapter/assets/36452456/e6f19370-2deb-4d5b-aad5-3352afe09667">
 </pre>
 </details>
 
@@ -142,12 +143,14 @@ gemini:
 coze:
 > 在 `www.coze.com` 官网中登陆，浏览器 `cookies` 中复制完整的 `cookie` 就是 `Authorization` 参数
 
-> 支持指定bot模型：
+> 》》支持指定bot模型 《《
 > 
 > 格式 -> coze/botId-version-scene;
 > 例子 -> coze/7353052833752694791-1712016747307-2
 > 
-> 支持开发者模式，该模式下可修改全局变量TopP、Temperature、MaxTokens。
+> 》》支持开发者模式《《
+> 
+> 该模式下可修改全局变量TopP、Temperature、MaxTokens。
 > 但是会出现排队情况，建议多账号轮询使用
 >
 > cookie需为botId自己所属的账号， 结尾 o 固定
@@ -155,6 +158,15 @@ coze:
 > 格式 -> coze/botId-spaceId-scene-o; 
 > 例子 -> coze/7353052833752694791-xxx-4-o
 >
+> 》》支持webSdk模式《《
+> 
+> 该模式下不需要cookies，
+> version 随意填写；； 尚未得知封控等级和限流机制，请勿滥用
+> 
+> 格式 -> coze/botId-xxx-scene-w;
+> 例子 -> coze/7353052833752694791-xxx-1000-w
+> 
+> -------
 > tips: 由于内置配置经常变动，难以维护 改为配置化
 >
 > 请用户在 `config.yaml` 中修改 [#31](https://github.com/bincooo/chatgpt-adapter/issues/31)
@@ -171,6 +183,10 @@ custom:
 > 
 > 需在 `config.yaml` 里配置 `custom-llm` 属性
 
+interpreter:
+> 无需cookie， model参数为 `open-interpreter`
+> 
+> 在配置中设置 `interpreter` 属性值，需配合 [open-interpreter](https://github.com/OpenInterpreter/open-interpreter) 使用，具体搭建过程移步 [issue](https://github.com/bincooo/chatgpt-adapter/issues/36)
 #### free画图接口
 
 提供了 `coze.dall-e-3`、 `sd.dall-e-3`、`xl.dall-e-3`、 `pg.dall-e-3`、 `google.dall-e-3`，它们会根据你提供的 `Authorization` 选择其中的一个
@@ -186,6 +202,9 @@ Authorization: sk-prodia-xl
 
 // dalle-4k.dall-e-3
 Authorization: sk-dalle-4k
+
+// dalle-3-xl.dall-e-3
+Authorization: sk-dalle-3-xl
 
 // google.dall-e-3
 Authorization: sk-google-xl

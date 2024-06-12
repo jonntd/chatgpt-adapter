@@ -163,34 +163,36 @@ var (
 
 var (
 	dalle4kModels = []string{
+		"3840 x 2160",
+		"2560 x 1440",
+		"Photo",
 		"Cinematic",
-		"8K",
-		"4K",
-		"HDR",
+		"Anime",
+		"3D Model",
+		"(No style)",
+	}
+)
+
+var (
+	animagineXl31Models = []string{
+		"(None)",
+		"Cinematic",
 		"Photographic",
-		"Disney Style",
 		"Anime",
 		"Manga",
 		"Digital Art",
 		"Pixel art",
 		"Fantasy art",
-		"Cyberpunk",
-		"Graffiti Art",
 		"Neonpunk",
 		"3D Model",
-		"Steampunk",
-		"Retro Futurism",
-		"Baroque",
-		"Surreal Art",
-		"Impressionist",
-		"Art Deco",
-		"Minimalist",
-		"Abstract",
-		"Gothic",
-		"Vaporwave",
-		"HDR Urban",
-		"Classic Oil Painting",
-		"HDR Nature",
-		"Modern Advertisement Logo",
+	}
+
+	animagineXl31Samples = []string{
+		"DPM++ 2M Karras",
+		"DPM++ SDE Karras",
+		"DPM++ 2M SDE Karras",
+		"Euler",
+		"Euler a",
+		"DDIM",
 	}
 )
