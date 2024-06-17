@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  chatgpt-adapter:
+    image: ghcr.io/jonntd/chatgpt-adapter:latest
+    container_name: chatgpt-adapter
+    restart: always
+    ports:
+      - "7890:8080"
+#    volumes:
+#      - /data/config.yaml:/app/config.yaml
+    command: --proxies=socks5://glider:8443
+
+  glider:
+    image: nadoo/glider
+    container_name: glider
+    restart: always
+    ports:
+      - "8443:8443"
+    volumes:
+      - /data:/etc/glider
+    command: -config=/etc/glider/glider.conf
