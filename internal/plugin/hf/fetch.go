@@ -3,6 +3,7 @@ package hf
 import (
 	"fmt"
 	com "github.com/bincooo/chatgpt-adapter/internal/common"
+	"github.com/bincooo/chatgpt-adapter/internal/plugin"
 	"github.com/bincooo/chatgpt-adapter/logger"
 	"github.com/bincooo/chatgpt-adapter/pkg"
 	"github.com/bincooo/emit.io"
@@ -17,6 +18,77 @@ const (
 	userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0"
 )
 
+func Ox000(ctx *gin.Context, model, samples, message string) (value string, err error) {
+	var (
+		hash    = emit.GioHash()
+		proxies = ctx.GetString("proxies")
+		baseUrl = "https://prodia-fast-stable-diffusion.hf.space"
+		domain  = pkg.Config.GetString("domain")
+	)
+
+	if domain == "" {
+		domain = fmt.Sprintf("http://127.0.0.1:%d", ctx.GetInt("port"))
+	}
+
+	response, err := emit.ClientBuilder(nil).
+		Proxies(proxies).
+		Context(com.GetGinContext(ctx)).
+		POST(baseUrl+"/queue/join").
+		JHeader().
+		Header("User-Agent", userAgent).
+		Body(map[string]interface{}{
+			"data": []interface{}{
+				message + ", {{{{by famous artist}}}, beautiful, 4k",
+				negative,
+				model,
+				25,
+				samples,
+				10,
+				1024,
+				1024,
+				-1,
+			},
+			"fn_index":     0,
+			"trigger_id":   15,
+			"session_hash": hash,
+		}).
+		DoC(emit.Status(http.StatusOK), emit.IsJSON)
+	if err != nil {
+		return
+	}
+
+	logger.Info(emit.TextResponse(response))
+	response, err = emit.ClientBuilder(nil).
+		Proxies(proxies).
+		Context(com.GetGinContext(ctx)).
+		GET(baseUrl+"/queue/data").
+		Query("session_hash", hash).
+		Header("User-Agent", userAgent).
+		DoS(http.StatusOK)
+	if err != nil {
+		return
+	}
+
+	c, err := emit.NewGio(com.GetGinContext(ctx), response)
+	if err != nil {
+		return
+	}
+
+	c.Event("process_completed", func(j emit.JoinEvent) (_ interface{}) {
+		d := j.Output.Data
+		if len(d) == 0 {
+			c.Failed(fmt.Errorf("image generate failed: %s", j.InitialBytes))
+			return
+		}
+		result := d[0].(map[string]interface{})
+		value = result["url"].(string)
+		return
+	})
+
+	err = c.Do()
+	return
+}
+
 func Ox001(ctx *gin.Context, model, samples, message string) (value string, err error) {
 	var (
 		hash    = emit.GioHash()
@@ -29,15 +101,16 @@ func Ox001(ctx *gin.Context, model, samples, message string) (value string, err 
 		domain = fmt.Sprintf("http://127.0.0.1:%d", ctx.GetInt("port"))
 	}
 
-	conn, err := emit.SocketBuilder().
+	conn, response, err := emit.SocketBuilder(plugin.HTTPClient).
 		Proxies(proxies).
 		URL(baseUrl + "/queue/join").
 		DoS(http.StatusSwitchingProtocols)
 	if err != nil {
 		return
 	}
+	defer response.Body.Close()
 
-	c, err := emit.NewGio(ctx.Request.Context(), conn)
+	c, err := emit.NewGio(com.GetGinContext(ctx), conn)
 	if err != nil {
 		return
 	}
@@ -89,87 +162,6 @@ func Ox001(ctx *gin.Context, model, samples, message string) (value string, err 
 	return
 }
 
-func Ox000(ctx *gin.Context, model, samples, message string) (value string, err error) {
-	var (
-		hash    = emit.GioHash()
-		proxies = ctx.GetString("proxies")
-		baseUrl = "https://prodia-fast-stable-diffusion.hf.space"
-		domain  = pkg.Config.GetString("domain")
-	)
-
-	if domain == "" {
-		domain = fmt.Sprintf("http://127.0.0.1:%d", ctx.GetInt("port"))
-	}
-
-	response, err := emit.ClientBuilder().
-		Context(ctx.Request.Context()).
-		Proxies(proxies).
-		GET(baseUrl+"/queue/join").
-		Query("fn_index", "0").
-		Query("session_hash", hash).
-		DoC(emit.Status(http.StatusOK), emit.IsSTREAM)
-	if err != nil {
-		return
-	}
-
-	c, err := emit.NewGio(ctx.Request.Context(), response)
-	if err != nil {
-		return
-	}
-
-	c.Event("send_data", func(j emit.JoinEvent) (_ interface{}) {
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		_, err = emit.ClientBuilder().
-			Proxies(proxies).
-			Context(ctx.Request.Context()).
-			POST(baseUrl + "/queue/data").
-			JHeader().
-			Body(map[string]interface{}{
-				"fn_index":     0,
-				"session_hash": hash,
-				"event_id":     j.EventId,
-				"trigger_id":   r.Intn(15) + 5,
-				"data": []interface{}{
-					message + ", {{{{by famous artist}}}, beautiful, 4k",
-					negative,
-					model,
-					25,
-					samples,
-					10,
-					1024,
-					1024,
-					-1,
-				},
-			}).
-			DoS(http.StatusOK)
-		if err != nil {
-			c.Failed(err)
-		}
-		return
-	})
-
-	c.Event("process_completed", func(j emit.JoinEvent) (_ interface{}) {
-		d := j.Output.Data
-		if len(d) == 0 {
-			c.Failed(fmt.Errorf("image generate failed: %s", j.InitialBytes))
-			return
-		}
-
-		result := d[0].(map[string]interface{})
-		value, err = com.Download(proxies, fmt.Sprintf("%s/file=%s", baseUrl, result["path"].(string)), "png")
-		if err != nil {
-			c.Failed(err)
-			return
-		}
-
-		value = fmt.Sprintf("%s/file/%s", domain, value)
-		return
-	})
-
-	err = c.Do()
-	return
-}
-
 func Ox002(ctx *gin.Context, model, message string) (value string, err error) {
 	var (
 		hash    = emit.GioHash()
@@ -177,9 +169,9 @@ func Ox002(ctx *gin.Context, model, message string) (value string, err error) {
 		baseUrl = "https://prithivmlmods-dalle-4k.hf.space"
 	)
 
-	response, err := emit.ClientBuilder().
+	response, err := emit.ClientBuilder(nil).
 		Proxies(proxies).
-		Context(ctx.Request.Context()).
+		Context(com.GetGinContext(ctx)).
 		POST(baseUrl+"/queue/join").
 		JHeader().
 		Body(map[string]interface{}{
@@ -204,9 +196,9 @@ func Ox002(ctx *gin.Context, model, message string) (value string, err error) {
 	}
 
 	logger.Info(emit.TextResponse(response))
-	response, err = emit.ClientBuilder().
+	response, err = emit.ClientBuilder(nil).
 		Proxies(proxies).
-		Context(ctx.Request.Context()).
+		Context(com.GetGinContext(ctx)).
 		GET(baseUrl+"/queue/data").
 		Query("session_hash", hash).
 		DoC(emit.Status(http.StatusOK), emit.IsSTREAM)
@@ -214,7 +206,7 @@ func Ox002(ctx *gin.Context, model, message string) (value string, err error) {
 		return
 	}
 
-	c, err := emit.NewGio(ctx.Request.Context(), response)
+	c, err := emit.NewGio(com.GetGinContext(ctx), response)
 	if err != nil {
 		return
 	}
@@ -264,9 +256,9 @@ func Ox003(ctx *gin.Context, message string) (value string, err error) {
 		domain = fmt.Sprintf("http://127.0.0.1:%d", ctx.GetInt("port"))
 	}
 
-	response, err := emit.ClientBuilder().
+	response, err := emit.ClientBuilder(nil).
 		Proxies(proxies).
-		Context(ctx.Request.Context()).
+		Context(com.GetGinContext(ctx)).
 		POST(baseUrl+"/queue/join").
 		Header("Origin", baseUrl).
 		Header("Referer", baseUrl+"/?__theme=light").
@@ -293,9 +285,9 @@ func Ox003(ctx *gin.Context, message string) (value string, err error) {
 	}
 	logger.Info(emit.TextResponse(response))
 
-	response, err = emit.ClientBuilder().
+	response, err = emit.ClientBuilder(nil).
 		Proxies(proxies).
-		Context(ctx.Request.Context()).
+		Context(com.GetGinContext(ctx)).
 		GET(baseUrl+"/queue/data").
 		Query("session_hash", hash).
 		Header("Origin", baseUrl).
@@ -374,9 +366,9 @@ func Ox004(ctx *gin.Context, model, samples, message string) (value string, err 
 		domain = fmt.Sprintf("http://127.0.0.1:%d", ctx.GetInt("port"))
 	}
 
-	response, err := emit.ClientBuilder().
+	response, err := emit.ClientBuilder(nil).
 		Proxies(proxies).
-		Context(ctx.Request.Context()).
+		Context(com.GetGinContext(ctx)).
 		POST(baseUrl+"/queue/join").
 		Header("Origin", baseUrl).
 		Header("Referer", baseUrl+"/?__theme=light").
@@ -410,9 +402,9 @@ func Ox004(ctx *gin.Context, model, samples, message string) (value string, err 
 	}
 	logger.Info(emit.TextResponse(response))
 
-	response, err = emit.ClientBuilder().
+	response, err = emit.ClientBuilder(nil).
 		Proxies(proxies).
-		Context(ctx.Request.Context()).
+		Context(com.GetGinContext(ctx)).
 		GET(baseUrl+"/queue/data").
 		Query("session_hash", hash).
 		Header("Origin", baseUrl).
@@ -425,7 +417,7 @@ func Ox004(ctx *gin.Context, model, samples, message string) (value string, err 
 		return "", err
 	}
 
-	c, err := emit.NewGio(ctx.Request.Context(), response)
+	c, err := emit.NewGio(com.GetGinContext(ctx), response)
 	if err != nil {
 		return "", err
 	}
@@ -489,15 +481,17 @@ func google(ctx *gin.Context, model, message string) (value string, err error) {
 		domain = fmt.Sprintf("http://127.0.0.1:%d", ctx.GetInt("port"))
 	}
 
-	conn, err := emit.SocketBuilder().
+	conn, response, err := emit.SocketBuilder(plugin.HTTPClient).
 		Proxies(proxies).
+		Context(com.GetGinContext(ctx)).
 		URL(baseUrl + "/queue/join").
 		DoS(http.StatusSwitchingProtocols)
 	if err != nil {
 		return
 	}
+	defer response.Body.Close()
 
-	c, err := emit.NewGio(ctx.Request.Context(), conn)
+	c, err := emit.NewGio(com.GetGinContext(ctx), conn)
 	if err != nil {
 		return
 	}

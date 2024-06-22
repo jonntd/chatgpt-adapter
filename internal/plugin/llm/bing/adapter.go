@@ -64,6 +64,10 @@ func (API) Completion(ctx *gin.Context) {
 		matchers   = common.GetGinMatchers(ctx)
 	)
 
+	if cookie == "xxx" {
+		cookie = common.RandString(32)
+	}
+
 	if completion.Model == Model+"-vision" {
 		pad = true
 	}
@@ -90,6 +94,7 @@ func (API) Completion(ctx *gin.Context) {
 		chat.Notebook(true)
 	}
 
+	chat.Client(plugin.HTTPClient)
 	if completion.Model == "bing-online" {
 		chat.Plugins(edge.PluginSearch)
 	} else {
@@ -97,7 +102,7 @@ func (API) Completion(ctx *gin.Context) {
 	}
 
 	maxCount := 2
-	if chat.IsLogin() {
+	if chat.IsLogin(common.GetGinContext(ctx)) {
 		maxCount = 28
 	}
 
@@ -113,7 +118,7 @@ func (API) Completion(ctx *gin.Context) {
 	cancel, matchers = joinMatchers(ctx, matchers)
 	ctx.Set(ginTokens, tokens)
 
-	r, err := chat.Reply(ctx.Request.Context(), currMessage, pMessages)
+	r, err := chat.Reply(common.GetGinContext(ctx), currMessage, pMessages)
 	if err != nil {
 		logger.Error(err)
 		response.Error(ctx, -1, err)

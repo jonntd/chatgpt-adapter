@@ -5,10 +5,10 @@ go 1.21.6
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/bincooo/claude-api v1.0.4-0.20240528113818-a9ce288f9fe6
-	github.com/bincooo/cohere-api v0.0.0-20240528114307-7566acc0f00c
-	github.com/bincooo/coze-api v1.0.2-0.20240610105300-54683ecac602
-	github.com/bincooo/edge-api v1.0.4-0.20240616102011-258db76c36a9
-	github.com/bincooo/emit.io v0.0.0-20240609040805-4d0939831fd7
+	github.com/bincooo/cohere-api v0.0.0-20240620172202-4b7697448b46
+	github.com/bincooo/coze-api v1.0.2-0.20240620163352-ad627f0dffd2
+	github.com/bincooo/edge-api v1.0.4-0.20240620163255-3f676529cccd
+	github.com/bincooo/emit.io v0.0.0-20240621115800-c89e848daf78
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/eko/gocache/lib/v4 v4.1.6
 	github.com/eko/gocache/store/go_cache/v4 v4.2.1

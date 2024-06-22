@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/bincooo/chatgpt-adapter/internal/common"
 	"github.com/bincooo/chatgpt-adapter/internal/gin.handler/response"
+	"github.com/bincooo/chatgpt-adapter/internal/plugin"
 	"github.com/bincooo/chatgpt-adapter/internal/vars"
 	"github.com/bincooo/chatgpt-adapter/logger"
 	"github.com/bincooo/chatgpt-adapter/pkg"
@@ -188,6 +189,7 @@ func mergeMessages(ctx *gin.Context, pad bool, max int, completion pkg.ChatCompl
 			newMessages = append(newMessages[:pos], newMessages[pos+1:]...)
 			text = strings.TrimSpace(message["text"].(string))
 			text = strings.TrimLeft(text, "<|user|>")
+			text = strings.TrimRight(text, "<|end|>")
 			break
 		}
 	}
@@ -253,13 +255,15 @@ func processMultiMessage(ctx *gin.Context, message pkg.Keyv[interface{}]) (strin
 			chat := edge.New(options.Proxies(proxies).
 				Model(edge.ModelSydney).
 				TopicToE(true))
-			kb, err := chat.LoadImage(o.GetString("url"))
+			chat.Client(plugin.HTTPClient)
+
+			kb, err := chat.LoadImage(common.GetGinContext(ctx), o.GetString("url"))
 			if err != nil {
 				return "", logger.WarpError(err)
 			}
 
 			chat.KBlob(kb)
-			partialResponse, err := chat.Reply(ctx.Request.Context(), "请你使用json代码块中文描述这张图片，不必说明直接输出结果", nil)
+			partialResponse, err := chat.Reply(common.GetGinContext(ctx), "请你使用json代码块中文描述这张图片，不必说明直接输出结果", nil)
 			if err != nil {
 				return "", logger.WarpError(err)
 			}
@@ -275,7 +279,8 @@ func processMultiMessage(ctx *gin.Context, message pkg.Keyv[interface{}]) (strin
 				return "", nil
 			}
 
-			contents = append(contents, fmt.Sprintf("*这是内置image工具的返回结果*： %s\n%s\n----", o.GetString("url"), content))
+			imageInfo := fmt.Sprintf("*这是内置image工具的返回结果*： %s\n%s\n----", o.GetString("url"), content)
+			contents = append(contents, imageInfo)
 		}
 	}
 

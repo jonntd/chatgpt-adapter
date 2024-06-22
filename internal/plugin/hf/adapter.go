@@ -87,6 +87,7 @@ func (API) Generation(ctx *gin.Context) {
 	model := matchModel(generation.Style, space)
 	samples := matchSamples(generation.Quality, space)
 
+	logger.Infof("curr space info[%s]: %s, %s", space, model, samples)
 	switch space {
 	case "prodia-xl":
 		modelSlice = xlModels
@@ -208,6 +209,7 @@ func completeTagsGenerator(ctx *gin.Context, content string) (string, error) {
 	prefix := ""
 	if model == "bing" {
 		// prefix += "<pad />"
+		prefix += "<notebook />"
 	}
 
 	w := prefix + agent.SDWords
@@ -228,7 +230,7 @@ func completeTagsGenerator(ctx *gin.Context, content string) (string, error) {
 		"max_tokens":  4096,
 	}
 
-	res, err := fetch(ctx.Request.Context(), proxies, baseUrl, cookie, obj)
+	res, err := fetch(com.GetGinContext(ctx), proxies, baseUrl, cookie, obj)
 	if err != nil {
 		return "", err
 	}
@@ -287,7 +289,7 @@ func fetch(ctx context.Context, proxies, baseUrl, cookie string, obj interface{}
 		proxies = ""
 	}
 
-	return emit.ClientBuilder().
+	return emit.ClientBuilder(nil).
 		Context(ctx).
 		Proxies(proxies).
 		POST(fmt.Sprintf("%s/v1/chat/completions", baseUrl)).

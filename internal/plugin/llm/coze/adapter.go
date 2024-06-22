@@ -147,6 +147,7 @@ func (API) Completion(ctx *gin.Context) {
 
 	co, msToken := extCookie(cookie)
 	chat := coze.New(co, msToken, options)
+	chat.Session(plugin.HTTPClient)
 
 	var lock *common.ExpireLock
 	if mode == 'o' {
@@ -166,7 +167,7 @@ func (API) Completion(ctx *gin.Context) {
 		query = coze.MergeMessages(pMessages)
 	}
 
-	chatResponse, err := chat.Reply(ctx.Request.Context(), coze.Text, query)
+	chatResponse, err := chat.Reply(common.GetGinContext(ctx), coze.Text, query)
 	// 构建完请求即可解锁
 	if lock != nil {
 		lock.Unlock()
@@ -200,7 +201,7 @@ func draftBot(ctx *gin.Context, pMessages []coze.Message, chat coze.Chat, comple
 	}
 
 	var value map[string]interface{}
-	value, err := chat.BotInfo(ctx.Request.Context())
+	value, err := chat.BotInfo(common.GetGinContext(ctx))
 	if err != nil {
 		logger.Error(err)
 		return nil, &emit.Error{Code: -1, Err: err}
@@ -209,14 +210,14 @@ func draftBot(ctx *gin.Context, pMessages []coze.Message, chat coze.Chat, comple
 	// 加锁
 	botId := customBotId(completion.Model)
 	eLock = newLock(botId)
-	if !eLock.Lock(ctx.Request.Context()) {
+	if !eLock.Lock(common.GetGinContext(ctx)) {
 		// 上锁失败
 		logger.Errorf("上锁失败：%s", botId)
 		return nil, &emit.Error{Code: http.StatusTooManyRequests, Err: errors.New("too Many Requests")}
 	}
 
 	logger.Infof("上锁成功：%s", botId)
-	if err = chat.DraftBot(ctx.Request.Context(), coze.DraftInfo{
+	if err = chat.DraftBot(common.GetGinContext(ctx), coze.DraftInfo{
 		Model:            value["model"].(string),
 		TopP:             completion.TopP,
 		Temperature:      completion.Temperature,
@@ -250,6 +251,7 @@ func (API) Generation(ctx *gin.Context) {
 	options := coze.NewDefaultOptions(botId35_16k, version35_16k, scene35_16k, false, proxies)
 	co, msToken := extCookie(cookie)
 	chat := coze.New(co, msToken, options)
+	chat.Session(plugin.HTTPClient)
 
 	image, err := chat.Images(ctx.Request.Context(), generation.Message)
 	if err != nil {
